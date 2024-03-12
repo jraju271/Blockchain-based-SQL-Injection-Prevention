@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Application</title>
+    <link rel="stylesheet" href="bootstrap.css">
+    <style type="text/css">
+        body{ font: 14px sans-serif; }
+        th, tr, td{text-align:center}
+        thead{background: #9EB8D9}
+        table, th, td{border: 1px solid black}
+    </style>
+</head>
+<body>
+    <h1>Banking Application</h1>
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username"><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password"><br>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email"><br>
+    <label for="accountNumber">Account Number:</label>
+    <input type="text" id="accountNumber" name="accountNumber"><br>
+    <label for="branchName">Branch Name:</label>
+    <input type="text" id="branchName" name="branchName"><br>
+    <label for="nationality">Nationality:</label>
+    <input type="text" id="nationality" name="nationality"><br>
+    <button onclick="setUser()">Submit</button>
+    <button onclick="getUser()">Get User Data</button>
+    <div id="userData"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
+    <script>
+        const web3 = new Web3(Web3.givenProvider || "http://localhost:7545"); //9545
+        // Contract address
+        const contractAddress = '0x622C0532256E8853196AF197965F8Fecb6E87C47'; //'0x73508bc0e93540220e1b846cf886a6d5df77d1d6';  Replace with your deployed contract address
+        async function setUser() {
+            if (web3.currentProvider) {
+                try{
+                    const accounts = await web3.eth.getAccounts();
+                    console.log('Accounts:', accounts);
+                    
+                    const connection = await web3.eth.getBlockNumber();
+                    console.log('Connection Status:', connection);
+                    console.log('Sender acc:', accounts[0]);
+                    //let instance = await Migrations.deployed();
+                    //let gasEstimate = await instance.setCompleted.estimateGas(/* arguments */);
+                    //console.log("Gas Estimate:", gasEstimate);
+
+                    const userDataContract = new web3.eth.Contract(
+                        [
+                            {
+                                "inputs": [
+                                    {
+                                        "internalType": "string",
+                                        "name": "_username",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "_password",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "_email",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "_accountNumber",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "_branchName",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "_nationality",
+                                        "type": "string"
+                                    }
+                                ],
+                                "name": "setUser",
+                                "outputs": [],
+                                "stateMutability": "nonpayable",
+                                "type": "function"
+                            }
+                        ],
+                        contractAddress
+                    );
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    const email = document.getElementById('email').value;
+                    const accountNumber = document.getElementById('accountNumber').value;
+                    const branchName = document.getElementById('branchName').value;
+                    const nationality = document.getElementById('nationality').value;
+                    await userDataContract.methods.setUser(username, password, email, accountNumber, branchName, nationality).send({ from: accounts[0] });
+                } catch (error) {
+                    console.error('Error requesting accounts:', error);
+                }
+            } else {
+                console.error('Ethereum provider not detected.');
+            }
+        }
+        
+        /*async function getUser() {
+            if (web3.currentProvider) {
+                try {
+                    const accounts = await web3.eth.getAccounts();
+                    console.log('Accounts:', accounts);
+                    const connection = await web3.eth.getBlockNumber();
+                    console.log('Connection Status:', connection);
+                    console.log('Sender acc:', accounts[0]);
+
+                    const userDataContract = new web3.eth.Contract(
+                        [
+                            {
+                                "inputs": [],
+                                "name": "getUser",
+                                "outputs": [
+                                    {
+                                        "internalType": "string",
+                                        "name": "username",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "password",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "email",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "accountNumber",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "branchName",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "internalType": "string",
+                                        "name": "nationality",
+                                        "type": "string"
+                                    }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            }
+                        ],
+                        contractAddress
+                    );
+                    const userData = await userDataContract.methods.getUser().call({ from: accounts[0] });
+                    console.log('User Data:', userData);
+                    document.getElementById('userData').innerText = `
+                        Username: ${userData.username}\n
+                        Password: ${userData.password}\n
+                        Email: ${userData.email}\n
+                        Account Number: ${userData.accountNumber}\n
+                        Branch Name: ${userData.branchName}\n
+                        Nationality: ${userData.nationality}
+                    `;
+                } catch (error) {
+                    console.error('Error requesting accounts:', error);
+                }
+            } else {
+                console.error('Ethereum provider not detected.');
+            }
+        }*/
+
+        async function getUser() {
+            try {
+                const accounts = await web3.eth.getAccounts();
+                console.log('Accounts:', accounts);
+
+                const userDataContract = new web3.eth.Contract(
+                    [
+                        {
+                            "inputs": [],
+                            "name": "getUser",
+                            "outputs": [
+                                {
+                                    "internalType": "string",
+                                    "name": "username",
+                                    "type": "string"
+                                },
+                                {
+                                    "internalType": "string",
+                                    "name": "password",
+                                    "type": "string"
+                                },
+                                {
+                                    "internalType": "string",
+                                    "name": "email",
+                                    "type": "string"
+                                },
+                                {
+                                    "internalType": "string",
+                                    "name": "accountNumber",
+                                    "type": "string"
+                                },
+                                {
+                                    "internalType": "string",
+                                    "name": "branchName",
+                                    "type": "string"
+                                },
+                                {
+                                    "internalType": "string",
+                                    "name": "nationality",
+                                    "type": "string"
+                                }
+                            ],
+                            "stateMutability": "view",
+                            "type": "function"
+                        }
+                    ], 
+                    contractAddress
+                );
+
+                const userData = await userDataContract.methods.getUser().call({ from: accounts[0] });
+                console.log('User Data:', userData);
+
+                document.getElementById('userData').innerText = `
+                    Username: ${userData.username}\n
+                    Password: ${userData.password}\n
+                    Email: ${userData.email}\n
+                    Account Number: ${userData.accountNumber}\n
+                    Branch Name: ${userData.branchName}\n
+                    Nationality: ${userData.nationality}
+                `;
+            } catch (error) {
+                console.error('Error requesting accounts:', error);
+            }
+        }
+
+
+    </script>
+</body>
+</html>
